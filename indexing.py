@@ -35,8 +35,20 @@ terms = ["love", "cat", "dog"]
 
 #Building the document-term matrix by using the tf-idf weights.
 #--> add your Python code here
-def calculate_tf(term, document):
-    return document.count(term) / len(terms)
+
+# Remove stopwords and apply stemming
+def process_document(doc):
+    words = doc.split()
+    words = [word for word in words if word not in stopWords]  # Remove stopwords
+    words = [stemming[word] if word in stemming else word for word in words]  # Apply stemming
+    return words
+
+preprocessed_documents = [process_document(doc) for doc in documents]
+
+def calculate_tf(term, doc_words):
+    term_count = doc_words.count(term)
+    return term_count / len(doc_words) if len(doc_words) > 0 else 0
+
 
 def calculate_idf(term, documents):
     count = sum(1 for doc in documents if term in doc)
@@ -44,17 +56,11 @@ def calculate_idf(term, documents):
 
 docTermMatrix = []
 
-for i, doc in enumerate(documents):
-    words = doc.lower().split()
-    # Remove stopwords
-    words = [word for word in words if word not in stopWords]
-    # Apply stemming
-    words = [stemming[word] if word in stemming else word for word in words]
-    
+for doc_words in preprocessed_documents:
     tfidf_row = []
     for term in terms:
-        tf = calculate_tf(term, words)
-        idf = calculate_idf(term, documents)
+        tf = calculate_tf(term, doc_words)
+        idf = calculate_idf(term, preprocessed_documents)
         tfidf = tf * idf
         tfidf_row.append(tfidf)
     docTermMatrix.append(tfidf_row)
